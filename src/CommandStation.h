@@ -6,10 +6,11 @@
 class CommandStation : public Device
 {
 private:
-	PulseGenerator& _pulseGenerator;
-	PulseTrain _pulseTrain;
 	Gpio& _gpio;
+	PulseGenerator& _pulseGenerator;
+	PulseTrain _pulseTrain;	
 	int _dccPin;
+	
 
 	void AddIdlePacket(PulseTrain& pulseTrain);
 	void AddPreamble(PulseTrain& pulseTrain);

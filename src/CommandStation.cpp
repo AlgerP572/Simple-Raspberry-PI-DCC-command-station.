@@ -2,10 +2,10 @@
 
 CommandStation::CommandStation(PulseGenerator& pulseGenerator, Gpio& gpio, int dccPin) :
 	Device("Simple Command Station"),
-	_pulseGenerator(pulseGenerator),
 	_gpio(gpio),
-	_dccPin(dccPin),
-	_pulseTrain(1 << dccPin)
+	_pulseGenerator(pulseGenerator),	
+	_pulseTrain(1 << dccPin),
+	_dccPin(dccPin)
 {	
 }
 

@@ -276,7 +276,6 @@ void sig_handler(int sig)
 
 int main(void)
 {
-	static int displayCount;
 
 	// Register signals 
 	signal(SIGQUIT, sig_handler);
@@ -315,14 +314,15 @@ int main(void)
 
 	PulseTrain& pulseTrain = commandStation.Start();
 	
+	long long unsigned int runCount = 100000;
 	do
-	{
-		if (pulseTrain.OuputCount >= 100000)
+	{		
+		if (pulseTrain.OuputCount >= runCount)
 		{
 			break;
 		}
 
-		int displayCount = pulseTrain.OuputCount;
+		int displayCount = (int) pulseTrain.OuputCount % 10000;
 		display.SetDisplayValue(displayCount);
 		display.Display();
 
