@@ -95,68 +95,6 @@ void CommandStation::AddByteEndBit(PulseTrain& pulseTrain)
 	pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(100));
 }
 
-void CommandStation::BitBangIdlePacket()
-{
-	for (int i = 0; i < 12; i++)
-	{
-		_gpio.WritePin(_dccPin, PinState::Low);
-		Delay::Microseconds(58);
-		_gpio.WritePin(_dccPin, PinState::High);
-		Delay::Microseconds(58);		
-	}
-
-	// Byte end bit
-	_gpio.WritePin(_dccPin, PinState::Low);
-	Delay::Microseconds(100);
-	_gpio.WritePin(_dccPin, PinState::High);
-	Delay::Microseconds(100);
-
-	// Byte: Value = 0xFF (255)
-	for (int i = 0; i < 8; i++)
-	{
-		_gpio.WritePin(_dccPin, PinState::Low);
-		Delay::Microseconds(58);
-		_gpio.WritePin(_dccPin, PinState::High);
-		Delay::Microseconds(58);
-	}
-
-	// Byte end bit
-	_gpio.WritePin(_dccPin, PinState::Low);
-	Delay::Microseconds(100);
-	_gpio.WritePin(_dccPin, PinState::High);
-	Delay::Microseconds(100);
-
-	// Byte: Value = 0x00 (0)
-	for (int i = 0; i < 8; i++)
-	{
-		_gpio.WritePin(_dccPin, PinState::Low);
-		Delay::Microseconds(100);
-		_gpio.WritePin(_dccPin, PinState::High);
-		Delay::Microseconds(100);
-	}
-
-	// Byte end bit
-	_gpio.WritePin(_dccPin, PinState::Low);
-	Delay::Microseconds(100);
-	_gpio.WritePin(_dccPin, PinState::High);
-	Delay::Microseconds(100);
-
-	// Checksum Byte: Value = 0xFF (255)
-	for (int i = 0; i < 8; i++)
-	{
-		_gpio.WritePin(_dccPin, PinState::Low);
-		Delay::Microseconds(58);
-		_gpio.WritePin(_dccPin, PinState::High);
-		Delay::Microseconds(58);
-	}
-
-	// Packet end bit.
-	_gpio.WritePin(_dccPin, PinState::Low);
-	Delay::Microseconds(58);
-	_gpio.WritePin(_dccPin, PinState::High);
-	Delay::Microseconds(58);
-}
-
 void CommandStation::SysInit(void)
 {
 	_gpio.SetPinMode(_dccPin, PinMode::Output);
