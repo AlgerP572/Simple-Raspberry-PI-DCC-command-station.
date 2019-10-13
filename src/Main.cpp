@@ -64,7 +64,7 @@ static PulseGenerator pulseGenerator(gpio,
 	pwm,
 	clock1,
 	DmaSyncPin,
-	1);
+	2);
 
 static CommandStation commandStation(pulseGenerator,
 	gpio,
