@@ -282,9 +282,12 @@ int main(void)
 			break;
 		}
 
-		int displayCount = (int) pulseTrain.OuputCount % 10000;
-		display.SetDisplayValue(displayCount);
+		int displayCount = (int) pulseTrain.OuputCount;
+		int ledCount = displayCount % 10000;
+
+		display.SetDisplayValue(ledCount);
 		display.Display();
+
 		printf("%d\n", displayCount);
 		nanosleep((const struct timespec[]) { {0, 100000L} }, NULL);
 
