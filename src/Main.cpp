@@ -274,21 +274,28 @@ int main(void)
 
 	PulseTrain& pulseTrain = commandStation.Start();
 	
-	long long unsigned int runCount = 1000000;
+	long long unsigned int runCount = 10000000;
+	int displayDelay = 0;
 	do
-	{		
+	{
 		if (pulseTrain.OuputCount >= runCount)
 		{
 			break;
 		}
 
-		int displayCount = (int) pulseTrain.OuputCount;
+		int displayCount = (int)pulseTrain.OuputCount;
 		int ledCount = displayCount % 10000;
 
 		display.SetDisplayValue(ledCount);
 		display.Display();
 
-		printf("%d\n", displayCount);
+		if (displayDelay > 5000)
+		{
+			printf("%d\n", displayCount);
+			displayDelay = 0;
+		}	
+		displayDelay++;
+	
 		nanosleep((const struct timespec[]) { {0, 100000L} }, NULL);
 
 	} while (pulseTrain.Valid);
