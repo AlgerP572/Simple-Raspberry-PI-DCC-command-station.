@@ -51,6 +51,10 @@
     <IncludePath>$(IncludePath);$(ProjectDir)Headers\;C:\GitHub\APLPIe\Src\;C:\GitHub\APLPIe\Src\Headers\;../</IncludePath>
     <ProjectPublicIncludePath>$(ProjectPublicIncludePath)</ProjectPublicIncludePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <IncludePath>$(IncludePath);$(ProjectDir)Headers\;C:\GitHub\APLPIe\Src\;C:\GitHub\APLPIe\Src\Headers\;../</IncludePath>
+    <ProjectPublicIncludePath>$(ProjectPublicIncludePath)</ProjectPublicIncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Link>
       <LibraryDependencies>wiringPi;pthread;rt</LibraryDependencies>
@@ -64,12 +68,15 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <Link>
-      <LibraryDependencies>wiringPi</LibraryDependencies>
+      <LibraryDependencies>wiringPi;pthread;rt</LibraryDependencies>
     </Link>
     <RemotePostBuildEvent>
       <Command>gpio export 17 out</Command>
       <Message>export pin 17 using the gpio utility so that we can execute the blink program without sudo</Message>
     </RemotePostBuildEvent>
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions);RPI_V3</PreprocessorDefinitions>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\APLPIe\Src\Delay.cpp" />

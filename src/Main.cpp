@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <signal.h>
+#include <unistd.h>
 
 #include "../../../APLPIe/Src/Headers/Clock.h"
 #include "../../../APLPIe/Src/Headers/Dma.h"
@@ -29,6 +30,7 @@
 #define   DisplayCharPin6 25
 #define   DisplayCharPin7 4
 
+#define   BitBangDCCPin 21
 #define   DmaDCCSignalPin 5
 #define   DmaSyncPin 6
 
@@ -40,17 +42,6 @@ static CharacterDisplayPins characterPins = CharacterDisplayPins(DisplayCharPin0
 	DisplayCharPin5,
 	DisplayCharPin6,
 	DisplayCharPin7);
-
-// Output pulses for testing
-//#define LeftRailOutput 21
-//#define LeftRailOutput 22
-
-// AxleCounter
-#define LeftRailInput    16
-#define RightRailInput   12
-
-#define LeftRailOutput 19
-#define RightRailOutput 26
 
 static Dma dma("Dma Controller");
 static Gpio gpio("Gpio Controller");
@@ -73,7 +64,7 @@ static PulseGenerator pulseGenerator(gpio,
 	pwm,
 	clock1,
 	DmaSyncPin,
-	1);
+	2);
 
 static CommandStation commandStation(pulseGenerator,
 	gpio,
@@ -99,12 +90,6 @@ void sysInit(void)
 		peripherals[i]->SysInit();
 	}
 
-	gpio.Export(LeftRailInput);
-	gpio.Export(RightRailInput);
-
-	gpio.Export(LeftRailOutput);
-	gpio.Export(RightRailOutput);
-
 	gpio.Export(DisplayPin0);
 	gpio.Export(DisplayPin1);
 	gpio.Export(DisplayPin2);
@@ -119,6 +104,7 @@ void sysInit(void)
 	gpio.Export(DisplayCharPin6);
 	gpio.Export(DisplayCharPin7);
 
+	gpio.Export(BitBangDCCPin);
 	gpio.Export(DmaDCCSignalPin);
 	gpio.Export(DmaSyncPin);
 
@@ -137,12 +123,6 @@ void sysUninit(void)
 		devices[i]->SysUninit();
 	}
 
-	gpio.Unexport(LeftRailInput);
-	gpio.Unexport(RightRailInput);
-
-	gpio.Unexport(LeftRailOutput);
-	gpio.Unexport(RightRailOutput);
-
 	gpio.Unexport(DisplayPin0);
 	gpio.Unexport(DisplayPin1);
 	gpio.Unexport(DisplayPin2);
@@ -157,6 +137,7 @@ void sysUninit(void)
 	gpio.Unexport(DisplayCharPin6);
 	gpio.Unexport(DisplayCharPin7);
 
+	gpio.Unexport(BitBangDCCPin);
 	gpio.Unexport(DmaDCCSignalPin);
 	gpio.Unexport(DmaSyncPin);
 
@@ -171,111 +152,112 @@ void sig_handler(int sig)
 	sysUninit();
 }
 
-//void AddLongPulseTrain(PulseTrain& pulseTrain)
-//{
-//	for (int i = 0; i < 12; i++)
-//	{
-//		pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(58));
-//		pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(58));
-//	}
-//
-//	pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(100));
-//	pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(100));
-//
-//	for (int i = 0; i < 8; i++)
-//	{
-//		pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(58));
-//		pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(58));
-//	}
-//
-//	pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(100));
-//	pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(100));
-//
-//	for (int i = 0; i < 8; i++)
-//	{
-//		pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(100));
-//		pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(100));
-//	}
-//
-//	pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(100));
-//	pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(100));
-//
-//	for (int i = 0; i < 8; i++)
-//	{
-//		pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(58));
-//		pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(58));
-//	}
-//
-//	pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(58));
-//	pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(58));
-//}
+void BitBangIdlePacket()
+{
+	// using 98 탎ec instead of 100 to force
+	// zero packets to use Microsecond spin and
+	// avoid the overhead with calling the system
+	// time APIs. See Delay::Microseconds for details
+	// Ans also accomodating for overhead in MicroSecondSpin
+	// so specifying 2 탎ec less than target.
 
-//void GeneratePulseTrainWithRepeat(PulseGenerator& pulseGenerator)
-//{
-//	//now set our pin as an output:
-//	/*gpio.SetPinMode(DmaDCCSignal, PinMode::Output);
-//	gpio.WritePin(DmaDCCSignal, PinState::High);
-//	gpio.WritePin(DmaDCCSignal, PinState::Low);
-//	gpio.WritePin(DmaDCCSignal, PinState::High);*/
-//		
-//	for (int j = 0; j < 5; j++)
-//	{
-//		PulseTrain pulseTrain(1 << DmaDCCSignalPin);
-//
-//		for (int i = 0; i < j; i++)
-//		{
-//
-//			AddLongPulseTrain(pulseTrain);
-//
-//			pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(500));
-//			pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(500));
-//		}
-//
-//		pulseTrain.Repeat = true;
-//
-//		pulseGenerator.Add(pulseTrain);
-//
-//		// start sync pin high so we see the end on
-//		// scope.
-//		pulseGenerator.WriteSyncPinState(PinState::Low);
-//		pulseGenerator.WriteSyncPinState(PinState::High);
-//		pulseGenerator.WriteSyncPinState(PinState::Low);
-//		pulseGenerator.WriteSyncPinState(PinState::High);
-//
-//		// Give wait a brief time to ensure above interrupts
-//		// are processed as non-running interrupts...
-//		Delay::Milliseconds(10); // Also nice place for breakpoint :o
-//
-//		pulseGenerator.Start();
-//
-//		// A pulse train of zero length can never start.
-//		// This pulse train will also be marked as
-//		// invalid.  Only pulse trains that actually start
-//		// DMA hardware are valid.
-//		do
-//		{
-//			if (pulseTrain.OuputCount >= 10000)
-//			{
-//				break;
-//			}
-//
-//			int displayCount = pulseTrain.OuputCount;
-//			display.SetDisplayValue(displayCount);
-//			display.Display();
-//
-//		} while (pulseTrain.Valid);
-//
-//		// Stop the pulse train.
-//		pulseTrain.Repeat = false;
-//
-//		// Wait for completion.
-//		do {} while (pulseGenerator.IsRunning());
-//		pulseTrain.OuputCount = 0;
-//	}
-//}
+	for (int i = 0; i < 12; i++)
+	{
+		gpio.WritePin(BitBangDCCPin, PinState::Low);
+		Delay::Microseconds(56);
+		gpio.WritePin(BitBangDCCPin, PinState::High);
+		Delay::Microseconds(56);
+	}
+
+	// Byte end bit
+	gpio.WritePin(BitBangDCCPin, PinState::Low);
+	Delay::Microseconds(98);
+	gpio.WritePin(BitBangDCCPin, PinState::High);
+	Delay::Microseconds(98);
+
+	// Byte: Value = 0xFF (255)
+	for (int i = 0; i < 8; i++)
+	{
+		gpio.WritePin(BitBangDCCPin, PinState::Low);
+		Delay::Microseconds(56);
+		gpio.WritePin(BitBangDCCPin, PinState::High);
+		Delay::Microseconds(56);
+	}
+
+	// Byte end bit
+	gpio.WritePin(BitBangDCCPin, PinState::Low);
+	Delay::Microseconds(98);
+	gpio.WritePin(BitBangDCCPin, PinState::High);
+	Delay::Microseconds(98);
+
+	// Byte: Value = 0x00 (0)
+	for (int i = 0; i < 8; i++)
+	{
+		gpio.WritePin(BitBangDCCPin, PinState::Low);
+		Delay::Microseconds(98);
+		gpio.WritePin(BitBangDCCPin, PinState::High);
+		Delay::Microseconds(98);
+	}
+
+	// Byte end bit
+	gpio.WritePin(BitBangDCCPin, PinState::Low);
+	Delay::Microseconds(98);
+	gpio.WritePin(BitBangDCCPin, PinState::High);
+	Delay::Microseconds(98);
+
+	// Checksum Byte: Value = 0xFF (255)
+	for (int i = 0; i < 8; i++)
+	{
+		gpio.WritePin(BitBangDCCPin, PinState::Low);
+		Delay::Microseconds(56);
+		gpio.WritePin(BitBangDCCPin, PinState::High);
+		Delay::Microseconds(56);
+	}
+
+	// Packet end bit.
+	gpio.WritePin(BitBangDCCPin, PinState::Low);
+	Delay::Microseconds(56);
+	gpio.WritePin(BitBangDCCPin, PinState::High);
+	Delay::Microseconds(56);
+}
+
+//static bool _mainDmaLoopRunning = true;
+
+// Or also use this to turn bit bang off
+static bool _mainDmaLoopRunning = false;
+
+void* BitBangThread(void* ptr)
+{
+	gpio.SetPinMode(BitBangDCCPin, PinMode::Output);
+
+	while(_mainDmaLoopRunning)
+	{
+		// This is to demonstrate pitfalls of using bit bang timing.  Since
+		// linux will pre-empt you at any time there will be pulses that 
+		// do not conform to NMRA timing...
+		//
+		// Timing of this same packet can vary by as much as 350 탎...
+		// This may work with some decoders but would not pass NMRA
+		// conformance testing.
+		BitBangIdlePacket();
+
+		// This for debugging a streched zero to appear between
+		// packets.  Set your scope to window trigger on a 500 탎ec
+		// wide pulse.
+		gpio.WritePin(BitBangDCCPin, PinState::Low);
+		Delay::Microseconds(500);
+		display.Display();
+		gpio.WritePin(BitBangDCCPin, PinState::High);
+		Delay::Microseconds(500);
+		display.Display();
+	}
+
+	return NULL;
+}
 
 int main(void)
 {
+	pthread_t bitBangThread;
 
 	// Register signals 
 	signal(SIGQUIT, sig_handler);
@@ -285,57 +267,51 @@ int main(void)
 	// can be intialized.
 	sysInit();
 
-	//	GeneratePulseTrainWithRepeat(pulseGenerator);
-
-	for (int i = 0; i < 1000; i++)
-	{
-		display.SetDisplayValue(i);
-
-		// This is to demonstrate pitfalls of using bit bang timing.  Since
-		// linux will pre-empt you at any time there will be pulses that 
-		// do not conform to NMRA timing...
-		//
-		// Timing of this same packet can vary by as much as 350 탎...
-		// This may work with some decoders but would not pass NMRA
-		// conformance testing.
-		commandStation.BitBangIdlePacket();
-		display.SetDisplayValue(i);
-
-		// This for debugging a streched zero to appear between
-		// packets.  Set your scope to window trigger on a 500 탎ec
-		// wide pulse.
-		gpio.WritePin(DmaDCCSignalPin, PinState::Low);
-		Delay::Microseconds(500);
-		display.Display();
-		gpio.WritePin(DmaDCCSignalPin, PinState::High);
-		Delay::Microseconds(500);
-		display.Display();	
-	}
+	pthread_create(&bitBangThread,
+		NULL,
+		BitBangThread,
+		(void*)NULL);	
 
 	PulseTrain& pulseTrain = commandStation.Start();
 	
-	long long unsigned int runCount = 100000;
+	long long unsigned int runCount = 10000000;
+	int displayDelay = 0;
 	do
-	{		
+	{
 		if (pulseTrain.OuputCount >= runCount)
 		{
 			break;
 		}
 
-		int displayCount = (int) pulseTrain.OuputCount % 10000;
-		display.SetDisplayValue(displayCount);
+		int displayCount = (int)pulseTrain.OuputCount;
+		int ledCount = displayCount % 10000;
+
+		display.SetDisplayValue(ledCount);
 		display.Display();
+
+		if (displayDelay > 5000)
+		{
+			printf("%d\n", displayCount);
+			displayDelay = 0;
+		}	
+		displayDelay++;
+	
+		nanosleep((const struct timespec[]) { {0, 100000L} }, NULL);
 
 	} while (pulseTrain.Valid);
 
 	// Stop the pulse train.
 	pulseTrain.Repeat = false;
+	_mainDmaLoopRunning = false;
 
 	// Wait for completion.
 	do {} while (pulseGenerator.IsRunning());
 	pulseTrain.OuputCount = 0;
+	
+	pthread_join(bitBangThread, NULL);
 
-	sysUninit();
+ 	sysUninit();
 	return 0;
 }
+
 
