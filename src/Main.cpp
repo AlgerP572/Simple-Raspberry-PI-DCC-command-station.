@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <signal.h>
 #include <unistd.h>
+#include <semaphore.h>
 
 #include "../../../APLPIe/Src/Headers/Clock.h"
 #include "../../../APLPIe/Src/Headers/Dma.h"
@@ -65,7 +66,7 @@ static PulseGenerator pulseGenerator(gpio,
 	pwm,
 	clock1,
 	DmaSyncPin,
-	2);
+	4);
 
 static CommandStation commandStation(pulseGenerator,
 	gpio,
@@ -73,6 +74,8 @@ static CommandStation commandStation(pulseGenerator,
 
 const int numDevices = 3;
 static Device** devices = new Device * [numDevices];
+static sem_t bitBangSem;
+static bool mainDmaLoopRunning = true;
 
 void BitBangIdlePacket()
 {
@@ -143,26 +146,44 @@ void BitBangIdlePacket()
 	Delay::Microseconds(58);
 }
 
-void BitBangThread(void* ptr)
+
+void BitBangISR(void* ptr)
 {
-	//	while(_mainDmaLoopRunning)
-	//	{
-	gpio.WritePin(BitBangDCCPin, PinState::High);
-	Delay::Microseconds(500);
 
-	// This is to demonstrate pitfalls of using bit bang timing.  Since
-	// linux will pre-empt you at any time there will be pulses that 
-	// do not conform to NMRA timing...
-	//
-	// Timing of this same packet can vary by as much as 350 탎...
-	// This may work with some decoders but would not pass NMRA
-	// conformance testing.
-	BitBangIdlePacket();
+	// Generally a bit bang thread would run at tha same priority as
+	// other threads in the application.  To emulate that and to synchronize
+	// the bit bang version of the DCC signal with the DMA version. A GPIO
+	// pin interrupt handler is being triggered each time a new DMA
+	// DCC packet starts.  Since this thread is at APLPIe ISR FIFO priority
+	// it is transferred to another thread of regular application priority
+	// This subjects the bit bang DCC thread to the same timing conditions
+	// it would see in a typical bit bang based applicaton.
+	sem_post(&bitBangSem);
+}
 
-	// This for debugging a streched zero to appear between
-	// packets.  Set your scope to window trigger on a 500 탎ec
-	// wide pulse.
-	gpio.WritePin(BitBangDCCPin, PinState::Low);
+void* BitBangThread(void* ptr)
+{
+	while (mainDmaLoopRunning)
+	{
+		sem_wait(&bitBangSem);
+
+		gpio.WritePin(BitBangDCCPin, PinState::High);
+		Delay::Microseconds(500);
+
+		// This is to demonstrate pitfalls of using bit bang timing.  Since
+		// linux will pre-empt you at any time there will be pulses that 
+		// do not conform to NMRA timing...
+		//
+		// Timing of this same packet can vary by as much as 350 탎...
+		// This may work with some decoders but would not pass NMRA
+		// conformance testing.
+		BitBangIdlePacket();
+
+		// This for debugging a streched zero to appear between
+		// packets.  Set your scope to window trigger on a 500 탎ec
+		// wide pulse.
+		gpio.WritePin(BitBangDCCPin, PinState::Low);
+	}
 }
 
 void sysInit(void)
@@ -213,7 +234,7 @@ void sysInit(void)
 
 	gpio.SetIsr(DmaDCCPacketStart,
 		IntTrigger::Rising,
-		BitBangThread,
+		BitBangISR,
 		NULL);
 }
 
@@ -263,18 +284,20 @@ int main(void)
 	signal(SIGQUIT, sig_handler);
 	signal(SIGABRT, sig_handler);
 
+	sem_init(&bitBangSem, 0, 0);
+
 	// Now that library is intialized the individual devices
 	// can be intialized.
 	sysInit();
 
-	/*pthread_create(&bitBangThread,
+	pthread_create(&bitBangThread,
 		NULL,
 		BitBangThread,
-		(void*)NULL);	*/
+		(void*)NULL);
 
 	PulseTrain& pulseTrain = commandStation.Start();
 	
-	long long unsigned int runCount = 10000000;
+	long long unsigned int runCount = 20000000;
 	int displayDelay = 0;
 	do
 	{
@@ -307,7 +330,14 @@ int main(void)
 	do {} while (pulseGenerator.IsRunning());
 	pulseTrain.OuputCount = 0;
 	
+	// Just in case its sleeping wake up the thread.
+	sem_post(&bitBangSem);
+	mainDmaLoopRunning = false;
+
 	pthread_join(bitBangThread, NULL);
+	sem_close(&bitBangSem);
+
+	commandStation.Stop();
 
  	sysUninit();
 	return 0;

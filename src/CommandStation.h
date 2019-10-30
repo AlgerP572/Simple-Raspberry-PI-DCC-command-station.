@@ -24,6 +24,7 @@ public:
 	CommandStation(PulseGenerator& pulseGenerator, Gpio& gpio, int dccPin);
 
 	PulseTrain&  Start();
+	void Stop();
 	void BitBangIdlePacket();
 
 	void virtual SysInit(void);
