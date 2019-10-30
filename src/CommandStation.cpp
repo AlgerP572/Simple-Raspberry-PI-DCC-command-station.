@@ -36,6 +36,17 @@ PulseTrain& CommandStation::Start()
 	return _pulseTrain;
 }
 
+void CommandStation::Stop()
+{
+	_pulseGenerator.WriteSyncPinState(PinState::Low);
+
+	// Wait for the interrupt handlers to clear.
+	Delay::Milliseconds(10);
+
+	_pulseGenerator.Stop();
+	_pulseGenerator.Clear();
+}
+
 void CommandStation::AddIdlePacket(PulseTrain& pulseTrain)
 {
 	AddPreamble(pulseTrain);
