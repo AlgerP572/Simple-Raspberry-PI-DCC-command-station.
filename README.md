@@ -41,7 +41,11 @@ https://github.com/AlgerP572/APLPIe
 
 ### DCC signal via GPIO bit-bang
 
+TODO...
+
 ### DCC signal via PWM gated DMA transfers from memory to GPIO
+
+TODO...
 
 
 
