@@ -20,7 +20,7 @@ https://github.com/AlgerP572/APLPIe
 
 The first approach being explored to generate a DCC idle packet is a simple bit bang approach that uses the ARM/CPU core to handle all of the timing and GPIO pin control.  This appraoch has the advantage of being very simple to program in C/C++ code and can be handled by inserting delays with the required pulse widths in between the GPIO pin write instructions.  C code that generates a DCC idle packet is shown below:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```C++
 
 void BitBangIdlePacket()
 {
@@ -91,7 +91,7 @@ void BitBangIdlePacket()
 	Delay::Microseconds(58);
 }
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
 
 Although as with most pre-emptive task operating systems such as Windows 10, and OS/2, linux should on average be very capable and hopefully fast enough to generate an one single DCC idle packet. Questions arise however to sustained accuracy of this timing when the command station application becomes more complete and is asked to take on other tasks at the same time such as display feedback, multiple throttles, and other advanced command station functions.  Will linux be able to sustain NMRA timing requirements while meeting these other application functions?
 
