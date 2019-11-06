@@ -18,7 +18,84 @@ https://github.com/AlgerP572/APLPIe
 
 ### DCC signal via GPIO bit-bang
 
-TODO...
+The first approach being explored to generate a DCC idle packet is a simple bit bang approach that uses the ARM/CPU core to handle all of the timing and GPIO pin control.  This appraoch has the advantage of being very simple to program in C/C++ code and can be handled by inserting delays with the required pulse widths in between the GPIO pin write instructions.  C code that generates a DCC idle packet is shown below:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void BitBangIdlePacket()
+{
+	// using 98 µsec instead of 100 to force
+	// zero packets to use Microsecond spin and
+	// avoid the overhead with calling the system
+	// time APIs. See Delay::Microseconds for details
+	// Ans also accomodating for overhead in MicroSecondSpin
+	// so specifying 2 µsec less than target.
+
+	for (int i = 0; i < 12; i++)
+	{
+		gpio.WritePin(BitBangDCCPin, PinState::Low);
+		Delay::Microseconds(58);
+		gpio.WritePin(BitBangDCCPin, PinState::High);
+		Delay::Microseconds(58);
+	}
+
+	// Byte end bit
+	gpio.WritePin(BitBangDCCPin, PinState::Low);
+	Delay::Microseconds(98);
+	gpio.WritePin(BitBangDCCPin, PinState::High);
+	Delay::Microseconds(98);
+
+	// Byte: Value = 0xFF (255)
+	for (int i = 0; i < 8; i++)
+	{
+		gpio.WritePin(BitBangDCCPin, PinState::Low);
+		Delay::Microseconds(58);
+		gpio.WritePin(BitBangDCCPin, PinState::High);
+		Delay::Microseconds(58);
+	}
+
+	// Byte end bit
+	gpio.WritePin(BitBangDCCPin, PinState::Low);
+	Delay::Microseconds(98);
+	gpio.WritePin(BitBangDCCPin, PinState::High);
+	Delay::Microseconds(98);
+
+	// Byte: Value = 0x00 (0)
+	for (int i = 0; i < 8; i++)
+	{
+		gpio.WritePin(BitBangDCCPin, PinState::Low);
+		Delay::Microseconds(98);
+		gpio.WritePin(BitBangDCCPin, PinState::High);
+		Delay::Microseconds(98);
+	}
+
+	// Byte end bit
+	gpio.WritePin(BitBangDCCPin, PinState::Low);
+	Delay::Microseconds(98);
+	gpio.WritePin(BitBangDCCPin, PinState::High);
+	Delay::Microseconds(98);
+
+	// Checksum Byte: Value = 0xFF (255)
+	for (int i = 0; i < 8; i++)
+	{
+		gpio.WritePin(BitBangDCCPin, PinState::Low);
+		Delay::Microseconds(58);
+		gpio.WritePin(BitBangDCCPin, PinState::High);
+		Delay::Microseconds(58);
+	}
+
+	// Packet end bit.
+	gpio.WritePin(BitBangDCCPin, PinState::Low);
+	Delay::Microseconds(58);
+	gpio.WritePin(BitBangDCCPin, PinState::High);
+	Delay::Microseconds(58);
+}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Although as with most pre-emptive task operating systems such as Windows 10, and OS/2, linux should on average be very capable and hopefully fast enough to generate an one single DCC idle packet. Questions arise however to sustained accuracy of this timing when the command station application becomes more complete and is asked to take on other tasks at the same time such as display feedback, multiple throttles, and other advanced command station functions.  Will linux be able to sustain NMRA timing requirements while meeting these other application functions?
+
+To answer this question a simple test app is provided that creates two basic threads.  One thread simply creates the idle packet and repeats the the packet on an I/O pin to create a stream of DCC idle packets.  A second thread prints to the screen the number of DCC packets that have so far been generated.  This simulates additional status functionality that a more advanced command station package might provide and gives the bit-bang thread a second thread which will also compete for CPU resources. A screen shot of the application is shown below:
+
+![Screen shot of simple command station showing bit-bang status](Media/SimpleCommandStation.jpg)
+
 
 ### DCC signal via PWM gated DMA transfers from memory to GPIO
 
