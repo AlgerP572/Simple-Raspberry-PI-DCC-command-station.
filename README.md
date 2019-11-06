@@ -148,6 +148,11 @@ Here is another example of a bit timing error.  This timing the bit error is in 
 
 ![Packet that does not conform to NMRA timing](Media/PreambleGlitch.jpg)
 
+### Multiple bit errors
+
+A final example shows multiple timing errors in the same packet.
+
+![Packet that does not conform to NMRA timing](Media/MultipleBitErrors.jpg)
 
 ### DCC signal via PWM gated DMA transfers from memory to GPIO
 
