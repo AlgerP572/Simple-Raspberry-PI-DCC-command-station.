@@ -89,7 +89,9 @@ void BitBangIdlePacket()
 	Delay::Microseconds(58);
 	gpio.WritePin(BitBangDCCPin, PinState::High);
 	Delay::Microseconds(58);
-}~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+}
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Although as with most pre-emptive task operating systems such as Windows 10, and OS/2, linux should on average be very capable and hopefully fast enough to generate an one single DCC idle packet. Questions arise however to sustained accuracy of this timing when the command station application becomes more complete and is asked to take on other tasks at the same time such as display feedback, multiple throttles, and other advanced command station functions.  Will linux be able to sustain NMRA timing requirements while meeting these other application functions?
 
