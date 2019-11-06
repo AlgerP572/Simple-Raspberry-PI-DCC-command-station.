@@ -154,6 +154,8 @@ A final example shows multiple timing errors in the same packet.
 
 ![Packet that does not conform to NMRA timing](Media/MultipleBitErrors.jpg)
 
+Overall success!  The raspberry PI does seem to be able to generate valid NMRA DCC packets at least on average with the Bit-Bang GPIO approach.  I have not tried to control any trains yet via this technique and I have also not measured what percentage of packets conform to the specifications.  It may well be that this appraoch is perfectly acceptable for driving trains on the railroad.  However, I also noticed the raspberry PI has several timing peripherals with timing specs that should easily conform to the NMRA standard.  Can these be used to generate a valid stream of DCC pakets?
+
 ### DCC signal via PWM gated DMA transfers from memory to GPIO
 
 TODO...
