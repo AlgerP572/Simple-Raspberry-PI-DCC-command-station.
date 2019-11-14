@@ -158,7 +158,15 @@ Overall success!  The raspberry PI does seem to be able to generate valid NMRA D
 
 ### DCC signal via PWM gated DMA transfers from memory to GPIO
 
-TODO...
+In the previous section using a simple bit-bang CPU driven approach was used to generate a DCC signal.  During the coding of the method it became clear that this approach will use about 36 per cent of the CPU and needs to be continuous and high priority.  This leaves limited resources for the program to do other things like display status query throttles queue packets etc.  It was already also seen that even without this overhead there are times when glitches can occur due to the fact that the CPU is also keeping linux up and running at the same time.
+
+I then began to wonder if the peripherls on the PI could be used to generate a DCC signal that would not use as many CPU resources and or use them in a way that was not so timing critical.  After many hours of research I thought I might be able to try an approach that uses DMA to move the required pin state onto the GPIO pins directly from memory.  If this could be done then perhaps a predefined sequence could be setup and triggered by the CPU.  And then once this triggering was set, in theory no further CPU resources would be required, since the DMA transactions can occur without any CPU overhead. Shown below is an image of this setup generating DCC Idle packets:
+
+![Raspberry Pi running PWM mediated GPIO via DMA](Media/DmaTiming.gif)
+
+
+More to come!
+
 
 
 
