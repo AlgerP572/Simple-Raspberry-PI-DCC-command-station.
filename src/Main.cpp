@@ -290,10 +290,11 @@ int main(void)
 	// can be intialized.
 	sysInit();
 
-	pthread_create(&bitBangThread,
+	// To use the bit-bang method uncomment this line of code.
+	/*pthread_create(&bitBangThread,
 		NULL,
 		BitBangThread,
-		(void*)NULL);
+		(void*)NULL);*/
 
 	PulseTrain& pulseTrain = commandStation.Start();
 	
@@ -301,16 +302,16 @@ int main(void)
 	int displayDelay = 0;
 	do
 	{
-		if (pulseTrain.OuputCount >= runCount)
+		/*if (pulseTrain.OuputCount >= runCount)
 		{
 			break;
-		}
+		}*/
 
 		int displayCount = (int)pulseTrain.OuputCount;
 		int ledCount = displayCount % 10000;
 
-		display.SetDisplayValue(ledCount);
-		display.Display();
+		/*display.SetDisplayValue(ledCount);
+		display.Display();*/
 
 		if (displayDelay > 5000)
 		{
