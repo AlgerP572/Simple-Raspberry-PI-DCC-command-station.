@@ -4,14 +4,14 @@
 #include <unistd.h>
 #include <semaphore.h>
 
-#include "../../../APLPIe/Src/Headers/Clock.h"
-#include "../../../APLPIe/Src/Headers/Dma.h"
-#include "../../../APLPIe/Src/Headers/Gpio.h"
-#include "../../../APLPIe/Src/Headers/Pwm.h"
-#include "../../../APLPIe/Src/Headers/Timer.h"
-#include "../../../APLPIe/Src/Headers/Display.h"
-#include "../../../APLPIe/Src/Headers/PulseGenerator.h"
-#include "../../../APLPIe/Src/Headers/Delay.h"
+#include "../../APLPIe/Src/Headers/Clock.h"
+#include "../../APLPIe/Src/Headers/Dma.h"
+#include "../../APLPIe/Src/Headers/Gpio.h"
+#include "../../APLPIe/Src/Headers/Pwm.h"
+#include "../../APLPIe/Src/Headers/Timer.h"
+#include "../../APLPIe/Src/Headers/Display.h"
+#include "../../APLPIe/Src/Headers/PulseGenerator.h"
+#include "../../APLPIe/Src/Headers/Delay.h"
 
 #include "CommandStation.h"
 
@@ -79,12 +79,12 @@ static bool mainDmaLoopRunning = true;
 
 void BitBangIdlePacket()
 {
-	// using 98 µsec instead of 100 to force
+	// using 98 ï¿½sec instead of 100 to force
 	// zero packets to use Microsecond spin and
 	// avoid the overhead with calling the system
 	// time APIs. See Delay::Microseconds for details
 	// Ans also accomodating for overhead in MicroSecondSpin
-	// so specifying 2 µsec less than target.
+	// so specifying 2 ï¿½sec less than target.
 
 	for (int i = 0; i < 12; i++)
 	{
@@ -174,13 +174,13 @@ void* BitBangThread(void* ptr)
 		// linux will pre-empt you at any time there will be pulses that 
 		// do not conform to NMRA timing...
 		//
-		// Timing of this same packet can vary by as much as 350 µs...
+		// Timing of this same packet can vary by as much as 350 ï¿½s...
 		// This may work with some decoders but would not pass NMRA
 		// conformance testing.
 		BitBangIdlePacket();
 
 		// This for debugging a streched zero to appear between
-		// packets.  Set your scope to window trigger on a 500 µsec
+		// packets.  Set your scope to window trigger on a 500 ï¿½sec
 		// wide pulse.
 		gpio.WritePin(BitBangDCCPin, PinState::Low);
 	}

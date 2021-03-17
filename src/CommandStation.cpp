@@ -3,9 +3,9 @@
 CommandStation::CommandStation(PulseGenerator& pulseGenerator, Gpio& gpio, int dccPin) :
 	Device("Simple Command Station"),
 	_gpio(gpio),
-	_pulseGenerator(pulseGenerator),	
-	_pulseTrain(),
-	_dccPin(dccPin)
+	_pulseGenerator(pulseGenerator),
+	_dccPin(dccPin),
+	_pulseTrain(1 << dccPin | 1 << 16)
 {	
 }
 
@@ -17,8 +17,8 @@ PulseTrain& CommandStation::Start()
 	// A strectched zero for debugging. Real command station
 	// may excluded this if improved packet throughput is desired.
 	// also adding another test pin for synching other code to packet start.
-	_pulseTrain.Add(1 << _dccPin | 1 << 16, PinState::Low, MICROSEC_TO_RNG1(500));
-	_pulseTrain.Add(1 << _dccPin | 1 << 16, PinState::High, MICROSEC_TO_RNG1(500));
+	_pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(500));
+	_pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(500));
 
 	_pulseGenerator.Add(_pulseTrain);
 	_pulseTrain.Repeat = true;
@@ -66,29 +66,29 @@ void CommandStation::AddPreamble(PulseTrain& pulseTrain)
 {
 	for (int i = 0; i < 12; i++)
 	{
-		pulseTrain.Add(1 << _dccPin, PinState::Low, MICROSEC_TO_RNG1(58));
-		pulseTrain.Add(1 << _dccPin, PinState::High, MICROSEC_TO_RNG1(58));
+		pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(58));
+		pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(58));
 	}
 }
 
 void CommandStation::AddPacketStartBit(PulseTrain& pulseTrain)
 {
-	pulseTrain.Add(1 << _dccPin, PinState::Low, MICROSEC_TO_RNG1(100));
-	pulseTrain.Add(1 << _dccPin, PinState::High, MICROSEC_TO_RNG1(100));
+	pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(100));
+	pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(100));
 }
 
 void CommandStation::AddPacketEndBit(PulseTrain& pulseTrain)
 {
-	pulseTrain.Add(1 << _dccPin, PinState::Low, MICROSEC_TO_RNG1(58));
-	pulseTrain.Add(1 << _dccPin, PinState::High, MICROSEC_TO_RNG1(58));
+	pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(58));
+	pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(58));
 }
 
 void CommandStation::AddOneByte(PulseTrain& pulseTrain)
 {
 	for (int i = 0; i < 8; i++)
 	{
-		pulseTrain.Add(1 << _dccPin, PinState::Low, MICROSEC_TO_RNG1(58));
-		pulseTrain.Add(1 << _dccPin, PinState::High, MICROSEC_TO_RNG1(58));
+		pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(58));
+		pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(58));
 	}
 }
 
@@ -96,15 +96,15 @@ void CommandStation::AddZeroByte(PulseTrain& pulseTrain)
 {
 	for (int i = 0; i < 8; i++)
 	{
-		pulseTrain.Add(1 << _dccPin, PinState::Low, MICROSEC_TO_RNG1(100));
-		pulseTrain.Add(1 << _dccPin, PinState::High, MICROSEC_TO_RNG1(100));
+		pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(100));
+		pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(100));
 	}
 }
 
 void CommandStation::AddByteEndBit(PulseTrain& pulseTrain)
 {
-	pulseTrain.Add(1 << _dccPin, PinState::Low, MICROSEC_TO_RNG1(100));
-	pulseTrain.Add(1 << _dccPin, PinState::High, MICROSEC_TO_RNG1(100));
+	pulseTrain.Add(PinState::Low, MICROSEC_TO_RNG1(100));
+	pulseTrain.Add(PinState::High, MICROSEC_TO_RNG1(100));
 }
 
 void CommandStation::SysInit(void)

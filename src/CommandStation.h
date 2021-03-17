@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../APLPIe/Src/Headers/Delay.h"
-#include "../APLPIe/Src/Headers/PulseGenerator.h"
+#include "../../APLPIe/Src/Headers/Delay.h"
+#include "../../APLPIe/Src/Headers/PulseGenerator.h"
 
 class CommandStation : public Device
 {
